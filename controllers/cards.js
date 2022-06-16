@@ -11,10 +11,17 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
+    .orFail(new Error('CastError'))
     .then((card) => {
       res.status(201).send(card);
     })
-    .catch((err) => res.status(400).send({ err }));
+    .catch((err) => {
+      if (err.message === 'CastError' || 'ValidationError') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.deleteCard = (req, res) => {
@@ -29,8 +36,17 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('CastError'))
     .then((card) => res.status(200).send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.message === 'NotFound') {
+        res.status(404).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
