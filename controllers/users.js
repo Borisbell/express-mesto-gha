@@ -10,10 +10,17 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.id)
+    .orFail(new Error('NotFound'))
     .then((user) => {
       res.status(200).send({ user });
     })
-    .catch(() => res.status(404).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.message === 'NotFound') {
+        res.status(404).send({ message: 'Пользователь не найден' })
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' })
+      }
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -24,17 +31,17 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateUser = (req, res) => {
-  User.findByIdAndUpdate(req.params.id, { name: res.name }, {
+  User.findByIdAndUpdate(req.user._id, { name: req.body.name, about: req.body.about }, {
     new: true,
     runValidators: true,
     upsert: false,
   })
-    .then((user) => res.status(200).send({ user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.updateUserAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.params.id, { avatar: res.avatar }, {
+  User.findByIdAndUpdate(req.params.id, { avatar: res.body.avatar }, {
     new: true,
     runValidators: true,
     upsert: false,
