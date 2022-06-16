@@ -38,16 +38,30 @@ module.exports.updateUser = (req, res) => {
     runValidators: true,
     upsert: false,
   })
+    .orFail(new Error('CastError'))
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.message === 'CastError' || 'ValidationError') {
+        res.status(400).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.updateUserAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.params.id, { avatar: res.body.avatar }, {
+  User.findByIdAndUpdate(req.user._id, { avatar: res.body.avatar }, {
     new: true,
     runValidators: true,
     upsert: false,
   })
+    .orFail(new Error('CastError'))
     .then((user) => res.status(200).send({ user }))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.message === 'CastError' || 'ValidationError') {
+        res.status(400).send({ message: 'Некорректная ссылка' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
