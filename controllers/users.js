@@ -16,9 +16,11 @@ module.exports.getUser = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Пользователь не найден' })
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        res.status(400).send({ message: 'Некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' })
+        res.status(500).send({ message: 'Произошла ошибка' });
       }
     });
 };
