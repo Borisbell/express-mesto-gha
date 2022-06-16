@@ -9,8 +9,8 @@ module.exports.getCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  const { _id } = req.user._id;
-  Card.create({ name, link, _id })
+  const { owner } = req.user._id;
+  Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
     .catch(() => res.status(400).send({ message: 'Произошла ошибка' }));
 };
