@@ -22,3 +22,23 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch(() => res.status(400).send({ message: 'Произошла ошибка' }));
 };
+
+module.exports.updateUser = (req, res) => {
+  User.findByIdAndUpdate(req.params.id, { name: res.name }, {
+    new: true,
+    runValidators: true,
+    upsert: false,
+  })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  User.findByIdAndUpdate(req.params.id, { avatar: res.avatar }, {
+    new: true,
+    runValidators: true,
+    upsert: false,
+  })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => res.status(500).send({ message: 'Произошла ошибка' }));
+};

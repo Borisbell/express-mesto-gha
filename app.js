@@ -10,6 +10,13 @@ const { PORT = 3000 } = process.env;
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use(bodyParser.json());
+app.use((req, res, next) => {
+  req.user = {
+    _id: '62aa37992dff57fc10336a83',
+  };
+
+  next();
+});
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
