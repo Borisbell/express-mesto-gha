@@ -11,23 +11,19 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .orFail(new Error('CastError'))
     .then((card) => {
+      if(!card) {
+        res.status(400).send({ message: 'Неверные данные' });
+      }
       res.status(201).send(card);
     })
-    .catch((err) => {
-      if (err.message === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(404).send({ message: 'Карточка с указанным _id не найдена' }));
 };
 
 module.exports.likeCard = (req, res) => {
@@ -56,7 +52,7 @@ module.exports.dislikeCard = (req, res) => {
     { new: true },
   )
     .orFail(new Error('CastError'))
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => res.status(200).send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Id карточки не найден' });
