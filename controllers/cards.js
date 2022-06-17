@@ -11,7 +11,7 @@ module.exports.getCards = (req, res) => {
     .then((cards) => {
       res.send(cards);
     })
-    .catch(() => res.status(BAD_REQUEST).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' }));
 };
 
 module.exports.createCard = (req, res) => {

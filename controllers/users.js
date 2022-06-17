@@ -11,7 +11,7 @@ module.exports.getUsers = (req, res) => {
     .then((users) => {
       res.send(users);
     })
-    .catch(() => res.status(BAD_REQUEST).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getUser = (req, res) => {
@@ -67,7 +67,7 @@ module.exports.updateUserAvatar = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.message === 'NotFound') {
