@@ -48,7 +48,7 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
@@ -67,7 +67,7 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((card) => res.status(200).send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
