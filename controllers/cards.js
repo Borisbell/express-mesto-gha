@@ -1,10 +1,15 @@
 const Card = require('../models/card');
 
+const NOT_FOUND = 404;
+const BAD_REQUEST = 400;
+const INTERN_SERVER_ERR = 500;
+
 module.exports.getCards = (req, res) => {
-  Card.find({}).then((cards) => {
-    res.status(200).send(cards);
-  })
-    .catch(() => res.status(404).send({ message: 'Произошла ошибка' }));
+  Card.find({})
+    .then((cards) => {
+      res.status(200).send(cards);
+    })
+    .catch(() => res.status(NOT_FOUND).send({ message: 'Ошибка сервера' }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -13,17 +18,17 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => {
       if (!card) {
-        res.status(400).send({ message: 'Неверные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Неверные данные' });
       }
       res.status(201).send(card);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
       }
     });
 };
@@ -31,14 +36,14 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(new Error('NotFound'))
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
       }
     });
 };
@@ -50,14 +55,14 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .orFail(new Error('NotFound'))
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => res.status(200).send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
       }
     });
 };
@@ -72,11 +77,11 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => res.status(200).send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
+        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
       }
     });
 };
