@@ -25,7 +25,7 @@ module.exports.createCard = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -40,7 +40,7 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -59,7 +59,7 @@ module.exports.likeCard = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -78,7 +78,7 @@ module.exports.dislikeCard = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });

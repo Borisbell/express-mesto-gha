@@ -21,7 +21,7 @@ module.exports.getUser = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
-      } else if (err.message === 'CastError' || err.message === 'ValidationError') {
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
@@ -68,7 +68,7 @@ module.exports.updateUserAvatar = (req, res) => {
     .orFail(new Error('CastError'))
     .then((user) => res.status(200).send({ user }))
     .catch((err) => {
-      if (err.message === 'CastError' || err.message === 'ValidationError') {
+      if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректная ссылка' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
