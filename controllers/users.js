@@ -9,7 +9,7 @@ module.exports.getUsers = (req, res) => {
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch(() => res.status(NOT_FOUND).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(NOT_FOUND).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getUser = (req, res) => {
@@ -24,7 +24,7 @@ module.exports.getUser = (req, res) => {
       } else if (err.message === 'CastError' || err.message === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -34,7 +34,7 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.message === 'ValidationError') {
+      if (err.message === 'CastError' || err.message === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -51,10 +51,10 @@ module.exports.updateUser = (req, res) => {
     .orFail(new Error('CastError'))
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.message === 'CastError' || err.message === 'ValidationError') {
+      if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -71,7 +71,7 @@ module.exports.updateUserAvatar = (req, res) => {
       if (err.message === 'CastError' || err.message === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректная ссылка' });
       } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
       }
     });
 };
