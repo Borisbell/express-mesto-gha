@@ -1,15 +1,17 @@
-const Card = require('../models/card');
+const {
+  NOT_FOUND,
+  BAD_REQUEST,
+  INTERN_SERVER_ERR,
+} = require('../constants');
 
-const NOT_FOUND = 404;
-const BAD_REQUEST = 400;
-const INTERN_SERVER_ERR = 500;
+const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      res.status(200).send(cards);
+      res.send(cards);
     })
-    .catch(() => res.status(NOT_FOUND).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(BAD_REQUEST).send({ message: 'Ошибка сервера' }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -17,15 +19,10 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => {
-      if (!card) {
-        res.status(BAD_REQUEST).send({ message: 'Неверные данные' });
-      }
       res.status(201).send(card);
     })
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
+      if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -55,7 +52,7 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .orFail(new Error('NotFound'))
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
@@ -74,7 +71,7 @@ module.exports.dislikeCard = (req, res) => {
     { new: true },
   )
     .orFail(new Error('NotFound'))
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
