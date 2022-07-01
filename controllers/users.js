@@ -1,9 +1,14 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const {
   NOT_FOUND,
   BAD_REQUEST,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
+const SALT_ROUNDS = 10;
+const SECRET_KEY = 'secret_key';
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
@@ -32,8 +37,13 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, SALT_ROUNDS)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.message === 'CastError' || 'ValidationError') {
@@ -77,5 +87,31 @@ module.exports.updateUserAvatar = (req, res) => {
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
       }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      return Promise.all([user,
+        bcrypt.compare(password, user.password)]);
+    })
+    .then((user, isPasswordCorrect) => {
+      if (!isPasswordCorrect) {
+        return Promise.reject(new Error('Неправильная почта или пароль'));
+      }
+      const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
     });
 };
