@@ -7,11 +7,12 @@ const {
   updateUser,
   updateUserAvatar,
 } = require('../controllers/users');
-const { TEST_AVA_LINK } = require('../constants');
+const { TEST_LINK } = require('../constants');
 
 router.get('/', getUsers);
 router.get('/me', getMyself);
 router.get('/:id', getUser);
+
 router.patch(
   '/me',
   celebrate({
@@ -22,14 +23,15 @@ router.patch(
   }),
   updateUser,
 );
+
 router.patch(
   '/me/avatar',
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().regex(TEST_AVA_LINK),
+      avatar: Joi.string().regex(TEST_LINK),
     }),
   }),
-  updateUserAvatar.apply,
+  updateUserAvatar,
 );
 
 module.exports = router;

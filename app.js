@@ -8,7 +8,7 @@ const { login, createUser } = require('./controllers/users');
 
 const { isAuth } = require('./middlewares/auth');
 
-const { TEST_AVA_LINK } = require('./constants');
+const { TEST_LINK } = require('./constants');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -28,7 +28,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(TEST_AVA_LINK),
+    avatar: Joi.string().regex(TEST_LINK),
     password: Joi.string().required().min(8),
     email: Joi.string().required().email(),
   }),

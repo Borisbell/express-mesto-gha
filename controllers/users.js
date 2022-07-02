@@ -106,22 +106,27 @@ module.exports.updateUser = (req, res) => {
     });
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar }, {
     new: true,
     runValidators: true,
   })
     .orFail(new Error('NotFound'))
-    .then((user) => res.send({ user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректная ссылка' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
+        const error = new Error('Пользователь не найден');
+        error.statusCode = NOT_FOUND;
+        throw error;
       }
-    });
+      if (err.message === 'CastError' || 'ValidationError') {
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
+        throw error;
+      }
+      throw err;
+    })
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
