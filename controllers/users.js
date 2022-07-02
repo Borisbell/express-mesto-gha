@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-
+const { generateToken } = require('../helpers/jwt');
 const {
   NOT_FOUND,
   BAD_REQUEST,
@@ -9,10 +8,11 @@ const {
 
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 const SALT_ROUNDS = 10;
-const SECRET_KEY = 'secret_key';
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
+  console.log('User id: ', req.user.id);
+
   User.find({})
     .then((users) => {
       res.send(users);
@@ -151,13 +151,14 @@ module.exports.login = (req, res) => {
         throw err;
       }
 
-      return jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+      return generateToken({ _id: user._id });
     })
     .then((token) => res.send({ token }))
     .catch((err) => {
       if (err.statusCode === 403) {
         return res.status(403).send({ message: 'Неправильный Емайл или пароль' });
       }
+      console.log(err);
       return res.status(500).send({ message: 'Что-то пошло не так' });
     });
 };

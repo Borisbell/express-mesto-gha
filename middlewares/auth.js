@@ -1,28 +1,32 @@
-const jwt = require('jsonwebtoken');
+const { checkToken } = require('../helpers/jwt');
+const User = require('../models/user');
 
-const handleAuthError = (res) => {
-  res
-    .status(401)
-    .send({ message: 'Необходима авторизация' });
-};
+const isAuth = (req, res, next) => {
+  const auth = req.headers.authorization;
+  console.log('isAuth: ', auth);
 
-const extractBearerToken = (header) => header.replace('Bearer ', '');
-
-module.exports = (req, res, next) => {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    return handleAuthError(res);
+  if (!auth) {
+    return res.status(401).send({ message: 'Авторизуйся' });
   }
 
-  const token = extractBearerToken(authorization);
-  let payload;
+  const token = auth.replace('Bearer ', '');
 
   try {
-    payload = jwt.verify(token, 'secret_key');
+    const payload = checkToken(token);
+
+    User.findOne({ email: payload.email })
+      .then((user) => {
+        if (!user) {
+          return res.status(401).send({ message: 'Авторизуйся' });
+        }
+
+        req.user = { user };
+        next();
+      })
+      .catch(() => res.status(500).send({ message: 'что-то не так внутри авторизации' }));
   } catch (err) {
-    return handleAuthError(res);
+    return res.status(401).send({ message: 'Авторизуйся' });
   }
-  req.user = payload;
-  next();
 };
+
+module.exports = { isAuth };
