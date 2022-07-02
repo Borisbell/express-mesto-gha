@@ -24,7 +24,15 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
+    password: Joi.string().required().min(8),
+    email: Joi.string().required().email(),
+  }),
+}), createUser);
 
 app.use('/users', isAuth, usersRouter);
 app.use('/cards', isAuth, cardsRouter);
@@ -34,6 +42,7 @@ app.use('*', (req, res) => {
 });
 
 app.use(errors());
+
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.statusCode) {

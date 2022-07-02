@@ -84,8 +84,7 @@ module.exports.createUser = (req, res, next) => {
         error.statusCode = 409;
         throw error;
       }
-
-      // throw err;
+      throw err;
     })
     .catch(next);
 };
