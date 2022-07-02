@@ -6,7 +6,7 @@ const {
   BAD_REQUEST,
   INTERN_SERVER_ERR,
 } = require('../constants');
-
+const MONGO_DUPLICATE_ERROR_CODE = 11000;
 const SALT_ROUNDS = 10;
 const SECRET_KEY = 'secret_key';
 const User = require('../models/user');
@@ -36,17 +36,37 @@ module.exports.getUser = (req, res) => {
     });
 };
 
+module.exports.getMyself = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(new Error('NotFound'))
+    .then((user) => {
+      res.send({ user });
+    })
+    .catch((err) => {
+      if (err.message === 'NotFound') {
+        res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
+      }
+    });
+};
+
 module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
   bcrypt.hash(password, SALT_ROUNDS)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.message === 'CastError' || 'ValidationError') {
+      if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
+        res.status(409).send({ message: 'Этот емейл уже занят' });
+      } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
         res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
@@ -93,7 +113,7 @@ module.exports.updateUserAvatar = (req, res) => {
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error('Неправильные почта или пароль'));

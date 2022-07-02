@@ -20,13 +20,14 @@ app.use(bodyParser.json());
 
 //   next();
 // });
-
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
-// app.get('/users/me', );
-app.use(auth);
-app.post('/signin', login);
 app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    password: Joi.string().required().min(8),
+    email: Joi.string().required().email(),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
@@ -34,6 +35,11 @@ app.post('/signin', celebrate({
     email: Joi.string().required().email(),
   }),
 }), createUser);
+
+app.use(auth);
+
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
 app.use((req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
