@@ -10,28 +10,30 @@ const throwUnauthError = () => {
 const isAuth = (req, res, next) => {
   const auth = req.headers.authorization;
 
-  if (!auth) {
+  if (!auth || !auth.startsWith('Bearer ')) {
     throwUnauthError();
   }
 
   const token = auth.replace('Bearer ', '');
-
+  let payload;
   try {
-    const payload = checkToken(token);
+    payload = checkToken(token);
 
-    User.findOne({ email: payload.email })
-      .then((user) => {
-        if (!user) {
-          throwUnauthError();
-        }
+    // User.findOne({ email: payload.email })
+    //   .then((user) => {
+    //     if (!user) {
+    //       throwUnauthError();
+    //     }
 
-        req.user = { user };
+    //     req.user = { user };
 
-        next();
-      });
+    //     next();
+    //   });
   } catch (err) {
     throwUnauthError();
   }
+  req.user = payload;
+  next();
 };
 
 module.exports = { isAuth };

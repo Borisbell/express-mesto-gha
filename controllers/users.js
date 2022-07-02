@@ -38,12 +38,12 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.getMyself = (req, res, next) => {
-  console.log(req.user.user);
-  User.findById(req.user.user._id)
+  console.log(req.user);
+  User.findById(req.user._id)
     .orFail(new Error('NotFound'))
     .then((user) => {
       console.log(user);
-      return res.status(200).send({ user });
+      return res.status(200).send(user);
     })
     .catch(next);
 };
