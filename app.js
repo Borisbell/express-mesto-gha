@@ -31,24 +31,27 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
     password: Joi.string().required().min(8),
     email: Joi.string().required().email(),
   }),
 }), createUser);
 
-app.use(auth);
-
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
-app.use((req, res) => {
+app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
+
 app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Что-то пошло не так' });
 });
+
+app.use(auth);
+
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
 app.listen(PORT, () => {
   console.log('works on port', PORT);
 });
