@@ -73,6 +73,10 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         res.status(409).send({ message: 'Этот емейл уже занят' });
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
+      } else {
+        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
       }
     });
 };

@@ -43,7 +43,6 @@ app.use('/cards', auth, cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
-
 app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
