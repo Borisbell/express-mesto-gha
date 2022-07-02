@@ -6,6 +6,7 @@ const {
   BAD_REQUEST,
   INTERN_SERVER_ERR,
 } = require('../constants');
+
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 const SALT_ROUNDS = 10;
 const SECRET_KEY = 'secret_key';
@@ -62,7 +63,13 @@ module.exports.createUser = (req, res) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(201).send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+      _id: user._id,
+    }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         res.status(409).send({ message: 'Этот емейл уже занят' });

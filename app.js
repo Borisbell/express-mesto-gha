@@ -29,8 +29,8 @@ app.post('/signin', celebrate({
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
     password: Joi.string().required().min(8),
     email: Joi.string().required().email(),
   }),
@@ -44,6 +44,8 @@ app.use((req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
 app.use(errors());
+
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Что-то пошло не так' });
 });
