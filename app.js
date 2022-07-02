@@ -31,16 +31,16 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
     password: Joi.string().required().min(8),
     email: Joi.string().required().email(),
   }),
 }), createUser);
 
-app.use('/users', auth, usersRouter);
-app.use('/cards', auth, cardsRouter);
+app.use(auth);
 
-app.use('*', (req, res) => {
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
+app.use((req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
 app.use(errors());
