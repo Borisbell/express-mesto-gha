@@ -129,7 +129,7 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     const error = new Error('Не передан емейл или пароль');
-    error.statusCode = 400;
+    error.statusCode = 401;
     throw error;
   }
 
@@ -158,11 +158,4 @@ module.exports.login = (req, res, next) => {
     })
     .then((token) => res.send({ token }))
     .catch(next);
-  // .catch((err) => {
-  //   if (err.statusCode === 403) {
-  //     return res.status(403).send({ message: 'Неправильный Емайл или пароль' });
-  //   }
-  //   console.log(err);
-  //   return res.status(500).send({ message: 'Что-то пошло не так' });
-  // });
 };
