@@ -21,20 +21,21 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUser = (req, res, next) => {
+  console.log(req.params);
   User.findById(req.params.id)
     .orFail(new Error('NotFound'))
     .then((user) => {
-      res.send({ user });
+      res.send(user);
     })
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
-      }
       if (err.message === 'CastError' || 'ValidationError') {
         const error = new Error('Некорректные данные');
         error.statusCode = BAD_REQUEST;
+        throw error;
+      }
+      if (err.message === 'NotFound') {
+        const error = new Error('Пользователь не найден');
+        error.statusCode = NOT_FOUND;
         throw error;
       }
       throw err;

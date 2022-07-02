@@ -68,6 +68,8 @@ module.exports.likeCard = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
+      } else if (err.message === 'Validation failed') {
+        res.status(NOT_FOUND).send({ message: 'Такой карточки нет' });
       } else if (err.message === 'CastError' || 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
       } else {
