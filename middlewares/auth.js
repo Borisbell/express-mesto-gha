@@ -1,12 +1,17 @@
 const { checkToken } = require('../helpers/jwt');
 const User = require('../models/user');
 
+const throwUnauthError = () => {
+  const error = new Error('Авторизуйся');
+  error.statusCode = 401;
+  throw error;
+};
+
 const isAuth = (req, res, next) => {
   const auth = req.headers.authorization;
-  console.log('isAuth: ', auth);
 
   if (!auth) {
-    return res.status(401).send({ message: 'Авторизуйся' });
+    throwUnauthError();
   }
 
   const token = auth.replace('Bearer ', '');
@@ -17,15 +22,15 @@ const isAuth = (req, res, next) => {
     User.findOne({ email: payload.email })
       .then((user) => {
         if (!user) {
-          return res.status(401).send({ message: 'Авторизуйся' });
+          throwUnauthError();
         }
 
         req.user = { user };
+
         next();
-      })
-      .catch(() => res.status(500).send({ message: 'что-то не так внутри авторизации' }));
+      });
   } catch (err) {
-    return res.status(401).send({ message: 'Авторизуйся' });
+    throwUnauthError();
   }
 };
 

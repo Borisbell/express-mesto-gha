@@ -37,21 +37,15 @@ module.exports.getUser = (req, res) => {
     });
 };
 
-module.exports.getMyself = (req, res) => {
-  User.findById(req.user._id)
+module.exports.getMyself = (req, res, next) => {
+  console.log(req.user.user);
+  User.findById(req.user.user._id)
     .orFail(new Error('NotFound'))
     .then((user) => {
-      res.send({ user });
+      console.log(user);
+      return res.status(200).send({ user });
     })
-    .catch((err) => {
-      if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -138,7 +132,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = 403;
+        err.statusCode = 401;
         throw err;
       }
 
@@ -150,7 +144,7 @@ module.exports.login = (req, res, next) => {
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = 403;
+        err.statusCode = 401;
         throw err;
       }
 
