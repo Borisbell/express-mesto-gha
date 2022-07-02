@@ -54,7 +54,7 @@ module.exports.getMyself = (req, res) => {
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -85,8 +85,9 @@ module.exports.createUser = (req, res) => {
         throw error;
       }
 
-      throw err;
-    });
+      // throw err;
+    })
+    .catch(next);
 };
 
 module.exports.updateUser = (req, res) => {
@@ -125,7 +126,7 @@ module.exports.updateUserAvatar = (req, res) => {
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     const error = new Error('Не передан емейл или пароль');
@@ -156,7 +157,8 @@ module.exports.login = (req, res) => {
 
       return generateToken({ _id: user._id });
     })
-    .then((token) => res.send({ token }));
+    .then((token) => res.send({ token }))
+    .catch(next);
   // .catch((err) => {
   //   if (err.statusCode === 403) {
   //     return res.status(403).send({ message: 'Неправильный Емайл или пароль' });

@@ -24,15 +24,7 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(TEST_AVA_LINK),
-    password: Joi.string().required().min(8),
-    email: Joi.string().required().email(),
-  }),
-}), createUser);
+app.post('/signup', createUser);
 
 app.use('/users', isAuth, usersRouter);
 app.use('/cards', isAuth, cardsRouter);
@@ -40,6 +32,7 @@ app.use('/cards', isAuth, cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
+
 app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
