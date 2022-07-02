@@ -30,19 +30,31 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(new Error('NotFound'))
-    .then((card) => res.send({ card }))
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        const error = new Error('Нет прав на удаление карточки');
+        error.statusCode = 403;
+        throw error;
+      }
+      res.send({ card });
+    })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        const error = new Error('Пользователь не найден');
+        error.statusCode = NOT_FOUND;
+        throw error;
       }
-    });
+      if (err.message === 'CastError' || 'ValidationError') {
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
+        throw error;
+      }
+      throw err;
+    })
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res) => {

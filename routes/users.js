@@ -11,7 +11,15 @@ const { TEST_LINK } = require('../constants');
 
 router.get('/', getUsers);
 router.get('/me', getMyself);
-router.get('/:id', getUser);
+router.get(
+  '/:id',
+  celebrate({
+    params: Joi.object().keys({
+      userId: Joi.string().alphanum().length(24),
+    }),
+  }),
+  getUser,
+);
 
 router.patch(
   '/me',
