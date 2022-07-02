@@ -59,25 +59,30 @@ module.exports.createUser = (req, res) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  bcrypt.hash(password, SALT_ROUNDS)
+  if (!email || !password) {
+    return res.status(400).send({
+      message: 'Не передан емейл или пароль',
+    });
+  }
+
+  bcrypt
+    .hash(password, SALT_ROUNDS)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(201).send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      email: user.email,
-      _id: user._id,
-    }))
+    .then((user) => {
+      res.send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
+    })
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        res.status(409).send({ message: 'Этот емейл уже занят' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        return res.status(409).send({ message: 'Емейл занят' });
       }
+      return res.status(500).send({ message: 'Что-то не так' });
     });
 };
 
@@ -119,26 +124,40 @@ module.exports.updateUserAvatar = (req, res) => {
 
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send({
+      message: 'Не передан емейл или пароль',
+    });
+  }
 
-  User.findOne({ email }).select('+password')
+  User
+    .findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные ПОЧТА или пароль'));
+        const err = new Error('Неправильный Емайл или пароль');
+        err.statusCode = 403;
+        throw err;
       }
 
-      return Promise.all([user,
-        bcrypt.compare(password, user.password)]);
+      return Promise.all([
+        user,
+        bcrypt.compare(password, user.password),
+      ]);
     })
-    .then((user, isPasswordCorrect) => {
+    .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        return Promise.reject(new Error('Неправильная почта или ПАРОЛЬ'));
+        const err = new Error('Неправильный Емайл или пароль');
+        err.statusCode = 403;
+        throw err;
       }
-      const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
-      res.send({ token });
+
+      return jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
     })
+    .then((token) => res.send({ token }))
     .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
+      if (err.statusCode === 403) {
+        return res.status(403).send({ message: 'Неправильный Емайл или пароль' });
+      }
+      return res.status(500).send({ message: 'Что-то пошло не так' });
     });
 };

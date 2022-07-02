@@ -6,7 +6,7 @@ const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-
+const { TEST_AVA_LINK } = require('./constants');
 const app = express();
 const { PORT = 3000 } = process.env;
 
@@ -31,7 +31,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().regex(TEST_AVA_LINK),
     password: Joi.string().required().min(8),
     email: Joi.string().required().email(),
   }),
@@ -41,15 +41,16 @@ app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.use((req, res) => {
+
+app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
 app.use(errors());
-
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Что-то пошло не так' });
 });
+
 app.listen(PORT, () => {
   console.log('works on port', PORT);
 });
