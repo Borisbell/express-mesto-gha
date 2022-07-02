@@ -119,7 +119,7 @@ module.exports.login = (req, res) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        return Promise.reject(new Error('Неправильные ПОЧТА или пароль'));
       }
 
       return Promise.all([user,
@@ -127,7 +127,7 @@ module.exports.login = (req, res) => {
     })
     .then((user, isPasswordCorrect) => {
       if (!isPasswordCorrect) {
-        return Promise.reject(new Error('Неправильная почта или пароль'));
+        return Promise.reject(new Error('Неправильная почта или ПАРОЛЬ'));
       }
       const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
       res.send({ token });

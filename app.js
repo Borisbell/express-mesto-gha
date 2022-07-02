@@ -37,6 +37,9 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
+app.use('/users', auth, usersRouter);
+app.use('/cards', auth, cardsRouter);
+
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страницы не существует' });
 });
@@ -47,11 +50,6 @@ app.use(errors());
 app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Что-то пошло не так' });
 });
-
-app.use(auth);
-
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
 app.listen(PORT, () => {
   console.log('works on port', PORT);
 });
