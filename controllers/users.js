@@ -60,9 +60,9 @@ module.exports.createUser = (req, res) => {
   } = req.body;
 
   if (!email || !password) {
-    return res.status(400).send({
-      message: 'Не передан емейл или пароль',
-    });
+    const error = new Error('Авторизуйся');
+    error.statusCode = 401;
+    throw error;
   }
 
   bcrypt
@@ -80,9 +80,12 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        return res.status(409).send({ message: 'Емейл занят' });
+        const error = new Error('Емейл занят');
+        error.statusCode = 409;
+        throw error;
       }
-      return res.status(500).send({ message: 'Что-то не так' });
+
+      throw err;
     });
 };
 
@@ -125,9 +128,9 @@ module.exports.updateUserAvatar = (req, res) => {
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send({
-      message: 'Не передан емейл или пароль',
-    });
+    const error = new Error('Не передан емейл или пароль');
+    error.statusCode = 400;
+    throw error;
   }
 
   User
@@ -153,12 +156,12 @@ module.exports.login = (req, res) => {
 
       return generateToken({ _id: user._id });
     })
-    .then((token) => res.send({ token }))
-    .catch((err) => {
-      if (err.statusCode === 403) {
-        return res.status(403).send({ message: 'Неправильный Емайл или пароль' });
-      }
-      console.log(err);
-      return res.status(500).send({ message: 'Что-то пошло не так' });
-    });
+    .then((token) => res.send({ token }));
+  // .catch((err) => {
+  //   if (err.statusCode === 403) {
+  //     return res.status(403).send({ message: 'Неправильный Емайл или пароль' });
+  //   }
+  //   console.log(err);
+  //   return res.status(500).send({ message: 'Что-то пошло не так' });
+  // });
 };
