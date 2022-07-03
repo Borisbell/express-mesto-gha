@@ -3,6 +3,8 @@ const { generateToken } = require('../helpers/jwt');
 const {
   NOT_FOUND,
   BAD_REQUEST,
+  UNAUTH_ERR,
+  CONFLICT_ERR,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
@@ -43,7 +45,7 @@ module.exports.getUser = (req, res, next) => {
 module.exports.getMyself = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(new Error('NotFound'))
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch(next);
 };
 
@@ -54,7 +56,7 @@ module.exports.createUser = (req, res, next) => {
 
   if (!email || !password) {
     const error = new Error('Авторизуйся');
-    error.statusCode = 401;
+    error.statusCode = UNAUTH_ERR;
     throw error;
   }
 
@@ -74,7 +76,7 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         const error = new Error('Емейл занят');
-        error.statusCode = 409;
+        error.statusCode = CONFLICT_ERR;
         throw error;
       }
       throw err;
@@ -127,7 +129,7 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     const error = new Error('Не передан емейл или пароль');
-    error.statusCode = 401;
+    error.statusCode = UNAUTH_ERR;
     throw error;
   }
 
@@ -136,7 +138,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = 401;
+        err.statusCode = UNAUTH_ERR;
         throw err;
       }
 
@@ -148,7 +150,7 @@ module.exports.login = (req, res, next) => {
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = 401;
+        err.statusCode = UNAUTH_ERR;
         throw err;
       }
 

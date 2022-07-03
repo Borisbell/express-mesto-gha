@@ -1,6 +1,7 @@
 const {
   NOT_FOUND,
   BAD_REQUEST,
+  FORBIDDEN_ERR,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
@@ -14,20 +15,22 @@ module.exports.getCards = (req, res) => {
     .catch(() => res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' }));
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(201).send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
+        throw error;
       }
-    });
+      throw err;
+    })
+    .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -36,7 +39,7 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         const error = new Error('Нет прав на удаление карточки');
-        error.statusCode = 403;
+        error.statusCode = FORBIDDEN_ERR;
         throw error;
       }
       Card.findByIdAndRemove(req.params.cardId)
