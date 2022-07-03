@@ -9,7 +9,7 @@ const { login, createUser } = require('./controllers/users');
 
 const { isAuth } = require('./middlewares/auth');
 
-const { TEST_LINK } = require('./constants');
+const { TEST_LINK } = require('./helpers/constants');
 
 const app = express();
 const { PORT = 3000 } = process.env;
