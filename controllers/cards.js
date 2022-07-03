@@ -55,7 +55,6 @@ module.exports.deleteCard = (req, res, next) => {
 };
 
 module.exports.likeCard = (req, res, next) => {
-  console.log(req.params.cardId);
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -64,6 +63,11 @@ module.exports.likeCard = (req, res, next) => {
     .orFail(new Error('NotFound'))
     .then((card) => res.send(card))
     .catch((err) => {
+      if (err.message === 'NotFound') {
+        const error = new Error('Пользователь не найден');
+        error.statusCode = NOT_FOUND;
+        throw error;
+      }
       if (err.message === 'CastError') {
         const error = new Error('Некорректные данные');
         error.statusCode = BAD_REQUEST;
@@ -74,7 +78,7 @@ module.exports.likeCard = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -83,12 +87,12 @@ module.exports.dislikeCard = (req, res) => {
     .orFail(new Error('NotFound'))
     .then((card) => res.send({ card }))
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+      if (err.message === 'CastError') {
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
+        throw error;
       }
-    });
+      throw err;
+    })
+    .catch(next);
 };
