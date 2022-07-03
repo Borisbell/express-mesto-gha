@@ -87,6 +87,11 @@ module.exports.dislikeCard = (req, res, next) => {
     .orFail(new Error('NotFound'))
     .then((card) => res.send({ card }))
     .catch((err) => {
+      if (err.message === 'NotFound') {
+        const error = new Error('Пользователь не найден');
+        error.statusCode = NOT_FOUND;
+        throw error;
+      }
       if (err.message === 'CastError') {
         const error = new Error('Некорректные данные');
         error.statusCode = BAD_REQUEST;
