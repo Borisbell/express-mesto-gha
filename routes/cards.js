@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const validateLink = require('../helpers/validateLink');
+
 const {
   getCards,
   createCard,
@@ -8,7 +10,7 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-const { TEST_LINK } = require('../helpers/constants');
+// const { TEST_LINK } = require('../helpers/constants');
 
 router.get('/', getCards);
 router.post(
@@ -16,7 +18,7 @@ router.post(
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
-      link: Joi.string().required().regex(TEST_LINK),
+      link: Joi.string().required().custom(validateLink),
     }),
   }),
   createCard,
