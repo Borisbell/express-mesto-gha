@@ -3,7 +3,6 @@ const { generateToken } = require('../helpers/jwt');
 const {
   NOT_FOUND,
   BAD_REQUEST,
-  UNAUTH_ERR,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
@@ -55,7 +54,7 @@ module.exports.createUser = (req, res, next) => {
 
   if (!email || !password) {
     const error = new Error('Авторизуйся');
-    error.statusCode = UNAUTH_ERR;
+    error.statusCode = 401;
     throw error;
   }
 
@@ -128,7 +127,7 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     const error = new Error('Не передан емейл или пароль');
-    error.statusCode = UNAUTH_ERR;
+    error.statusCode = 401;
     throw error;
   }
 
@@ -137,7 +136,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = UNAUTH_ERR;
+        err.statusCode = 401;
         throw err;
       }
 
@@ -149,7 +148,7 @@ module.exports.login = (req, res, next) => {
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
         const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = UNAUTH_ERR;
+        err.statusCode = 401;
         throw err;
       }
 

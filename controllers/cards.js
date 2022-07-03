@@ -1,7 +1,6 @@
 const {
   NOT_FOUND,
   BAD_REQUEST,
-  FORBIDDEN_ERR,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
@@ -39,7 +38,7 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         const error = new Error('Нет прав на удаление карточки');
-        error.statusCode = FORBIDDEN_ERR;
+        error.statusCode = 403;
         throw error;
       }
       Card.findByIdAndRemove(req.params.cardId)
