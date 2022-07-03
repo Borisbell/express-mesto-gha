@@ -31,30 +31,22 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  console.log(req.params.cardId);
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(new Error('NotFound'))
     .then((card) => {
-      console.log(card);
-      console.log('Owner ', card.owner.toString());
-      console.log('User ', req.user._id);
-
       if (card.owner.toString() !== req.user._id) {
         const error = new Error('Нет прав на удаление карточки');
         error.statusCode = 403;
         throw error;
       }
-      res.send({ card });
+      Card.findByIdAndRemove(req.params.cardId)
+        .then((deletedCard) => res.send(deletedCard))
+        .catch(next);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
         const error = new Error('Пользователь не найден');
         error.statusCode = NOT_FOUND;
-        throw error;
-      }
-      if (err.message === 'CastError' || 'ValidationError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
         throw error;
       }
       throw err;
