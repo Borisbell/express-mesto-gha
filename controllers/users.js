@@ -4,7 +4,6 @@ const {
   NOT_FOUND,
   BAD_REQUEST,
   UNAUTH_ERR,
-  CONFLICT_ERR,
   INTERN_SERVER_ERR,
 } = require('../constants');
 
@@ -76,7 +75,7 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         const error = new Error('Емейл занят');
-        error.statusCode = CONFLICT_ERR;
+        error.statusCode = 409;
         throw error;
       }
       throw err;
@@ -137,7 +136,7 @@ module.exports.login = (req, res, next) => {
     .findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        const err = new Error('Неправильный емайл или пароль');
+        const err = new Error('Неправильный Емайл или пароль');
         err.statusCode = UNAUTH_ERR;
         throw err;
       }
@@ -149,7 +148,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        const err = new Error('Неправильный емайл или пароль');
+        const err = new Error('Неправильный Емайл или пароль');
         err.statusCode = UNAUTH_ERR;
         throw err;
       }
