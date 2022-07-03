@@ -11,8 +11,6 @@ const SALT_ROUNDS = 10;
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
-  console.log('User id: ', req.user.id);
-
   User.find({})
     .then((users) => {
       res.send(users);
@@ -21,7 +19,6 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  console.log(req.params);
   User.findById(req.params.id)
     .orFail(new Error('NotFound'))
     .then((user) => {
@@ -44,13 +41,9 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.getMyself = (req, res, next) => {
-  console.log(req.user);
   User.findById(req.user._id)
     .orFail(new Error('NotFound'))
-    .then((user) => {
-      console.log(user);
-      return res.status(200).send(user);
-    })
+    .then((user) => res.status(200).send(user))
     .catch(next);
 };
 
