@@ -1,18 +1,15 @@
-const {
-  NOT_FOUND,
-  BAD_REQUEST,
-  FORBIDDEN_ERR,
-  INTERN_SERVER_ERR,
-} = require('../constants');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.send(cards);
     })
-    .catch(() => res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' }));
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -24,9 +21,7 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'CastError' || 'ValidationError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
+        throw new BadRequestError('Некорректные данные');
       }
       throw err;
     })
@@ -38,19 +33,15 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail(new Error('NotFound'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
-        const error = new Error('Нет прав на удаление карточки');
-        error.statusCode = FORBIDDEN_ERR;
-        throw error;
+        throw new ForbiddenError('Нет прав на удаление карточки');
       }
-      Card.findByIdAndRemove(req.params.cardId)
+      return Card.findByIdAndRemove(req.params.cardId)
         .then((deletedCard) => res.send(deletedCard))
         .catch(next);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
+        throw new NotFoundError('Пользователь не найден');
       }
       throw err;
     })
@@ -67,14 +58,10 @@ module.exports.likeCard = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
+        throw new NotFoundError('Пользователь не найден');
       }
       if (err.message === 'CastError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
+        throw new BadRequestError('Некорректные данные');
       }
       throw err;
     })
@@ -91,14 +78,10 @@ module.exports.dislikeCard = (req, res, next) => {
     .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
+        throw new NotFoundError('Пользователь не найден');
       }
       if (err.message === 'CastError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
+        throw new BadRequestError('Некорректные данные');
       }
       throw err;
     })

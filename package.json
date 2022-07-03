@@ -14,7 +14,7 @@
     "url": "git+https://github.com/Borisbell/express-mesto-gha.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Boris Belov",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Borisbell/express-mesto-gha/issues"

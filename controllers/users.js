@@ -1,23 +1,20 @@
 const bcrypt = require('bcrypt');
 const { generateToken } = require('../helpers/jwt');
-const {
-  NOT_FOUND,
-  BAD_REQUEST,
-  UNAUTH_ERR,
-  CONFLICT_ERR,
-  INTERN_SERVER_ERR,
-} = require('../constants');
+const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
+const UnAuthError = require('../errors/UnAuthError');
 
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 const SALT_ROUNDS = 10;
-const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       res.send(users);
     })
-    .catch(() => res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -28,14 +25,10 @@ module.exports.getUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
+        throw new NotFoundError('Пользователь не найден');
       }
       if (err.message === 'CastError' || 'ValidationError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
+        throw new BadRequestError('Некорректные данные');
       }
       throw err;
     })
@@ -46,6 +39,12 @@ module.exports.getMyself = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(new Error('NotFound'))
     .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.message === 'NotFound') {
+        throw new NotFoundError('Пользователь не найден');
+      }
+      throw err;
+    })
     .catch(next);
 };
 
@@ -55,9 +54,7 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   if (!email || !password) {
-    const error = new Error('Авторизуйся');
-    error.statusCode = UNAUTH_ERR;
-    throw error;
+    throw new BadRequestError('Необходима авторизация');
   }
 
   bcrypt
@@ -75,16 +72,14 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        const error = new Error('Емейл занят');
-        error.statusCode = CONFLICT_ERR;
-        throw error;
+        throw new ConflictError('Это емейл уже занят');
       }
       throw err;
     })
     .catch(next);
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name: req.body.name, about: req.body.about }, {
     new: true,
     runValidators: true,
@@ -93,13 +88,13 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь не найден' });
+        throw new NotFoundError('Пользователь не найден');
       } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Произошла ошибка' });
+        throw new BadRequestError('Некорректные данные');
       }
-    });
+      throw err;
+    })
+    .catch(next);
 };
 
 module.exports.updateUserAvatar = (req, res, next) => {
@@ -111,14 +106,10 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        const error = new Error('Пользователь не найден');
-        error.statusCode = NOT_FOUND;
-        throw error;
+        throw new NotFoundError('Пользователь не найден');
       }
       if (err.message === 'CastError' || 'ValidationError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
+        throw new BadRequestError('Некорректные данные');
       }
       throw err;
     })
@@ -128,18 +119,14 @@ module.exports.updateUserAvatar = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    const error = new Error('Не передан емейл или пароль');
-    error.statusCode = UNAUTH_ERR;
-    throw error;
+    throw new UnAuthError('Не передан емейл или пароль');
   }
 
   User
     .findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = UNAUTH_ERR;
-        throw err;
+        throw new UnAuthError('Не передан емейл или пароль');
       }
 
       return Promise.all([
@@ -149,9 +136,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        const err = new Error('Неправильный Емайл или пароль');
-        err.statusCode = UNAUTH_ERR;
-        throw err;
+        throw new UnAuthError('Не передан емейл или пароль');
       }
 
       return generateToken({ _id: user._id });

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+const NotFoundError = require('./errors/NotFoundError');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
@@ -19,7 +20,7 @@ app.use(bodyParser.json());
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
     email: Joi.string().required().email(),
   }),
 }), login);
@@ -29,7 +30,7 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().regex(TEST_LINK),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
     email: Joi.string().required().email(),
   }),
 }), createUser);
@@ -37,8 +38,8 @@ app.post('/signup', celebrate({
 app.use('/users', isAuth, usersRouter);
 app.use('/cards', isAuth, cardsRouter);
 
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Страницы не существует' });
+app.use('*', isAuth, (req, res) => { // eslint-disable-line no-unused-vars
+  throw new NotFoundError('Страницы не существует');
 });
 
 app.use(errors());

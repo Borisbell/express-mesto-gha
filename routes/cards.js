@@ -8,7 +8,7 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-const { TEST_LINK } = require('../constants');
+const { TEST_LINK } = require('../helpers/constants');
 
 router.get('/', getCards);
 router.post(
@@ -26,7 +26,7 @@ router.delete(
   '/:cardId',
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
+      cardId: Joi.string().length(24).hex().required(),
     }),
   }),
   deleteCard,
@@ -36,7 +36,7 @@ router.put(
   '/:cardId/likes',
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
+      cardId: Joi.string().length(24).hex().required(),
     }),
   }),
   likeCard,
@@ -46,7 +46,7 @@ router.delete(
   '/:cardId/likes',
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
+      cardId: Joi.string().length(24).hex().required(),
     }),
   }),
   dislikeCard,
