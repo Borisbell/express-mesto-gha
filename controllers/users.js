@@ -137,7 +137,7 @@ module.exports.login = (req, res, next) => {
     .findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        const err = new Error('Неправильный Емайл или пароль');
+        const err = new Error('Неправильный емайл или пароль');
         err.statusCode = UNAUTH_ERR;
         throw err;
       }
@@ -149,7 +149,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        const err = new Error('Неправильный Емайл или пароль');
+        const err = new Error('Неправильный емайл или пароль');
         err.statusCode = UNAUTH_ERR;
         throw err;
       }
