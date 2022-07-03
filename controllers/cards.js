@@ -31,9 +31,14 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
+  console.log(req.params.cardId);
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(new Error('NotFound'))
     .then((card) => {
+      console.log(card);
+      console.log('Owner ', card.owner.toString());
+      console.log('User ', req.user._id);
+
       if (card.owner.toString() !== req.user._id) {
         const error = new Error('Нет прав на удаление карточки');
         error.statusCode = 403;
