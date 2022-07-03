@@ -57,25 +57,24 @@ module.exports.deleteCard = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
+  console.log(req.params.cardId);
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .orFail(new Error('NotFound'))
-    .then((card) => res.send({ card }))
+    .then((card) => res.send(card))
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Id карточки не найден' });
-      } else if (err.message === 'Validation failed') {
-        res.status(NOT_FOUND).send({ message: 'Такой карточки нет' });
-      } else if (err.message === 'CastError' || 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(INTERN_SERVER_ERR).send({ message: 'Ошибка сервера' });
+      if (err.message === 'CastError') {
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
+        throw error;
       }
-    });
+      throw err;
+    })
+    .catch(next);
 };
 
 module.exports.dislikeCard = (req, res) => {

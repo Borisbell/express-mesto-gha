@@ -28,14 +28,14 @@ module.exports.getUser = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.message === 'CastError' || 'ValidationError') {
-        const error = new Error('Некорректные данные');
-        error.statusCode = BAD_REQUEST;
-        throw error;
-      }
       if (err.message === 'NotFound') {
         const error = new Error('Пользователь не найден');
         error.statusCode = NOT_FOUND;
+        throw error;
+      }
+      if (err.message === 'CastError' || 'ValidationError') {
+        const error = new Error('Некорректные данные');
+        error.statusCode = BAD_REQUEST;
         throw error;
       }
       throw err;

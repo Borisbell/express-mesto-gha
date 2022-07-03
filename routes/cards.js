@@ -36,7 +36,7 @@ router.put(
   '/:cardId/likes',
   celebrate({
     params: Joi.object().keys({
-      ownerId: Joi.string().alphanum().length(24),
+      cardId: Joi.string().alphanum().length(24),
     }),
   }),
   likeCard,
