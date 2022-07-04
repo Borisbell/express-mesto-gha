@@ -10,8 +10,6 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-// const { TEST_LINK } = require('../helpers/constants');
-
 router.get('/', getCards);
 router.post(
   '/',
