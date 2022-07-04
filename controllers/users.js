@@ -19,7 +19,7 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new Error('NotFound'))
+    .orFail(next(new NotFoundError('Нет пользователя с переданным id')))
     .then((user) => {
       res.send(user);
     })
@@ -28,7 +28,7 @@ module.exports.getUser = (req, res, next) => {
         next(new NotFoundError('Пользователь не найден'));
       } if (err.message === 'CastError' || 'ValidationError') {
         next(new BadRequestError('Некорректные данные'));
-      }
+      } else { next(err); }
     });
 };
 
@@ -39,7 +39,7 @@ module.exports.getMyself = (req, res, next) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         next(new NotFoundError('Пользователь не найден'));
-      }
+      } else { next(err); }
     });
 };
 
@@ -66,7 +66,7 @@ module.exports.createUser = (req, res, next) => {
         next(new ConflictError('Это емейл уже занят'));
       } else if (err.message === 'CastError' || 'ValidationError') {
         next(new BadRequestError('Некорректные данные'));
-      }
+      } else { next(err); }
     });
 };
 
@@ -82,7 +82,7 @@ module.exports.updateUser = (req, res, next) => {
         next(new NotFoundError('Пользователь не найден'));
       } else if (err.message === 'CastError' || 'ValidationError') {
         next(new BadRequestError('Некорректные данные'));
-      }
+      } else { next(err); }
     });
 };
 
@@ -98,7 +98,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
         next(new NotFoundError('Пользователь не найден'));
       } else if (err.message === 'CastError' || 'ValidationError') {
         next(new BadRequestError('Некорректные данные'));
-      }
+      } else { next(err); }
     });
 };
 
