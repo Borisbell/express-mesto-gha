@@ -1,6 +1,6 @@
-const { validator } = require('celebrate');
+const validator = require('validator');
 
-module.exports.validateURL = (value) => {
+module.exports.validateLink = (value) => {
   if (!validator.isURL(value, { require_protocol: true })) {
     throw new Error('Неправильный формат ссылки');
   }

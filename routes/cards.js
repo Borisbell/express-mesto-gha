@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const validateLink = require('../helpers/validateLink');
+const { validateLink } = require('../helpers/validateLink');
 
 const {
   getCards,
