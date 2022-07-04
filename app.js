@@ -8,8 +8,7 @@ const cardsRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 
 const { isAuth } = require('./middlewares/auth');
-
-const { TEST_LINK } = require('./helpers/constants');
+const { validateLink } = require('./helpers/validateLink');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -29,7 +28,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(TEST_LINK),
+    avatar: Joi.string().custom(validateLink),
     password: Joi.string().required(),
     email: Joi.string().required().email(),
   }),
@@ -44,13 +43,12 @@ app.use('*', isAuth, (req, res) => { // eslint-disable-line no-unused-vars
 
 app.use(errors());
 
-// eslint-disable-next-line consistent-return
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   if (err.statusCode) {
     return res.status(err.statusCode).send({ message: err.message });
   }
 
-  res.status(500).send({ message: 'Что-то пошло не так' });
+  return res.status(500).send({ message: 'Что-то пошло не так' });
 });
 
 app.listen(PORT, () => {});

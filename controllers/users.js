@@ -19,20 +19,18 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new Error('NotFound'))
+    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
       if (err.message === 'CastError' || 'ValidationError') {
-        throw new BadRequestError('Некорректные данные');
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.getMyself = (req, res, next) => {
@@ -41,21 +39,15 @@ module.exports.getMyself = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
-  if (!email || !password) {
-    throw new BadRequestError('Необходима авторизация');
-  }
 
   bcrypt
     .hash(password, SALT_ROUNDS)
@@ -72,11 +64,11 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        throw new ConflictError('Это емейл уже занят');
+        next(new ConflictError('Это емейл уже занят'));
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.updateUser = (req, res, next) => {
@@ -88,13 +80,11 @@ module.exports.updateUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       } else if (err.message === 'CastError' || 'ValidationError') {
-        throw new BadRequestError('Некорректные данные');
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.updateUserAvatar = (req, res, next) => {
@@ -106,27 +96,21 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
+      } else if (err.message === 'CastError' || 'ValidationError') {
+        next(new BadRequestError('Некорректные данные'));
       }
-      if (err.message === 'CastError' || 'ValidationError') {
-        throw new BadRequestError('Некорректные данные');
-      }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    throw new UnAuthError('Не передан емейл или пароль');
-  }
 
   User
     .findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new UnAuthError('Не передан емейл или пароль');
+        next(new UnAuthError('Не передан емейл или пароль'));
       }
 
       return Promise.all([
@@ -136,7 +120,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        throw new UnAuthError('Не передан емейл или пароль');
+        next(new UnAuthError('Не передан емейл или пароль'));
       }
 
       return generateToken({ _id: user._id });

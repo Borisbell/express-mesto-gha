@@ -21,11 +21,9 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'CastError' || 'ValidationError') {
-        throw new BadRequestError('Некорректные данные');
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -33,7 +31,7 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail(new Error('NotFound'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Нет прав на удаление карточки');
+        next(new ForbiddenError('Нет прав на удаление карточки'));
       }
       return Card.findByIdAndRemove(req.params.cardId)
         .then((deletedCard) => res.send(deletedCard))
@@ -41,11 +39,9 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -58,14 +54,12 @@ module.exports.likeCard = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
       if (err.message === 'CastError') {
-        throw new BadRequestError('Некорректные данные');
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -78,12 +72,10 @@ module.exports.dislikeCard = (req, res, next) => {
     .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.message === 'NotFound') {
-        throw new NotFoundError('Пользователь не найден');
+        next(new NotFoundError('Пользователь не найден'));
       }
       if (err.message === 'CastError') {
-        throw new BadRequestError('Некорректные данные');
+        next(new BadRequestError('Некорректные данные'));
       }
-      throw err;
-    })
-    .catch(next);
+    });
 };
