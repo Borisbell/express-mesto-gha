@@ -19,12 +19,14 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUser = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
+    .orFail(new Error('NotFound'))
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.message === 'CastError' || 'ValidationError') {
+      if (err.message === 'NotFound') {
+        next(new NotFoundError('Пользователь не найден'));
+      } if (err.message === 'CastError' || 'ValidationError') {
         next(new BadRequestError('Некорректные данные'));
       }
     });
